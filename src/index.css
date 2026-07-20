@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body {
+    @apply bg-metal-900 text-neutral-200 font-body antialiased select-none;
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  /* Brushed charcoal metal panel */
+  .panel-metal {
+    background:
+      linear-gradient(180deg, #26262b 0%, #16161a 55%, #101013 100%);
+    background-blend-mode: overlay;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 14px;
+    box-shadow:
+      0 8px 24px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+    position: relative;
+  }
+  /* Fine machined grain */
+  .panel-metal::before {
+    content: "";
+    position: absolute; inset: 0; border-radius: inherit;
+    background-image: repeating-linear-gradient(
+      100deg, rgba(255,255,255,0.015) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+  }
+
+  /* Recessed slot (screens / sliders sit here) */
+  .slot-recessed {
+    background: #0a0a0c;
+    border-radius: 10px;
+    box-shadow: var(--tw-shadow, ) ;
+    @apply shadow-socket;
+  }
+
+  /* Clear thick plastic surface — used by tactile controls */
+  .plastic {
+    background: linear-gradient(
+      160deg,
+      rgba(255,255,255,0.14) 0%,
+      rgba(255,255,255,0.04) 30%,
+      rgba(0,0,0,0.25) 100%);
+    backdrop-filter: blur(2px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    @apply shadow-plastic;
+  }
+
+  /* Amber engraved label text (like ENG / EXPORT etc.) */
+  .label-etched {
+    @apply font-display uppercase tracking-[0.18em] text-[11px];
+    color: #7c7c86;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.8);
+  }
+  .label-lit {
+    color: #ffc57a;
+    text-shadow: 0 0 8px rgba(232,162,74,0.6);
+  }
+}
