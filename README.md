@@ -38,32 +38,27 @@ machine** via a bundled Remotion + FFmpeg pipeline.
 
 ## 🚀 Quick Start
 
-```bash
+bash
 git clone https://github.com/stravelakis/byok-vid-creator.git
 cd byok-vid-creator
 npm install
 npm run dev
 
-Open the Backend Panel → paste your API keys → load the “Dogs & Butterflies” sample project → hit Render.
-Recommended specs: NVIDIA 8GB GPU · 32GB RAM · ~1 hr render / 10 min video.
-🗺️ Roadmap
- Google Drive export
- ElevenLabs voices
- Local neural voices (Piper / Coqui XTTS-v2, incl. voice cloning)
- Expanded transition library
-🤖 Built With AI
+> Open the Backend Panel → paste your API keys → load the “Dogs & Butterflies” sample project → hit Render.
+> Recommended specs: NVIDIA 8GB GPU · 32GB RAM · ~1 hr render / 10 min video.
+
+## 🗺️ Roadmap
+- Google Drive export
+- ElevenLabs voices
+- Local neural voices (Piper / Coqui XTTS-v2, incl. voice cloning)
+- Expanded transition library
+
+## 🤖 Built With AI
 This project was designed and engineered in collaboration with AI systems:
-You.com — orchestration & research
-Anthropic Claude Opus 4.8 — architecture, code generation, lip-sync design
-Hermes Agent — automation
-Google Flow — media workflow support
-Human direction & product vision: Stravelakis.
-📄 License
-MIT — see LICENSE.
-
-
-
-git clone https://github.com/stravelakis/byok-vid-creator.git
-cd byok-vid-creator
-npm install
-npm run dev
+- You.com — orchestration & research
+- Anthropic Claude Opus 4.8 — architecture, code generation, lip-sync design
+- Hermes Agent — automation
+- Google Flow — media workflow support
+- Human direction & product vision: Stravelakis.
+## 📄 License
+TBD.
