@@ -1,3 +1,39 @@
+📄 MASTER HANDOFF — BYOK-Vid-Creator (Phase 1a–1f complete)
+WHO I AM: Non-coder. I build by pasting full files only into the GitHub web editor. RULE: never give me edits, snippets, "append", or "// add here". ALWAYS give the ENTIRE file, tagged CREATE or EDIT with its exact path. I take direction well but cannot write code myself.
+WHAT THE APP IS: Desktop-only (Windows 11) Electron app. Turns a script → local TTS narration → auto-fetched stock B-roll + music/SFX → animated glowing waveforms + viseme lip-synced speaker disks + highlighted subtitles → rendered MP4 via Remotion. Deterministic (template/stock driven, NOT generative like Veo/Sora). Max 10 min, must handle 8 min+. End goal = installable .exe (via electron-builder, later phase).
+PRIORITY ORDER: Stability > Functionality > Output quality > UI wow. (But wow IS the dream for both final videos and the UI.)
+MY MACHINE (= recommended spec, not minimum): 8GB NVIDIA GPU, 32GB RAM, AMD CPU. ~1hr render per 10 min is fine.
+HOW I'M BUILDING: Writing files directly in GitHub web editor (github.com/Stravelakis/BYOK-Vid-Creator). I understand I MUST eventually run git clone → npm install → npm run dev on my PC to test — haven't done it yet. Nothing is installed locally yet.
+LOCKED STACK:
+Electron + electron-vite + React + TypeScript + Tailwind (dark-only) + Zustand + framer-motion.
+Config file is electron.vite.config.ts (NOT vite.config.ts).
+Render: Remotion (primary, GPU) + FFmpeg (audio mix/duck/mux).
+TTS: MAIN = Coqui XTTS-v2 (local, Greek+English, voice clone). FALLBACK = Azure Speech. TEST = Piper. DROPPED: Edge, ElevenLabs, Voxtral, Chirp.
+NO SSML phoneme accents / no phoneme subs (caused bad pauses). Accent/expression = audio post-processing (pedalboard: pitch/formant) LATER, once local model runs. I will NOT use the app until quality local model runs.
+Scene chunking LLM: GLM-5.2 via NVIDIA provider (BYOK).
+Media: Pixabay (video+music) + Pexels (video) + Jamendo (music) + Freesound (SFX). One MediaProvider interface.
+FPS = user choice 10 / 24 / 30, default 24 (dashboard dropdown, keep all three — do NOT force 24).
+Storage: local disk Day 1. Google Drive = UI present but disabled, "future feature" from Day 1.
+VISEMES: 9 slots = neutral, ah, ee, oh, oo, mbp, fv, l, chsh. Each PNG 1024×1024 transparent, head centered ~12% padding, head LOCKED in same position across all frames. Named char_<viseme>.png. Shrinkable (smaller head = smoother). Text-driven timing (no user audio, no diarization). <95% sync fidelity OK. I have inspiration images of a beagle "male dog" set + a female set.
+AVATAR DISK: round, face fills ~90%, independent bg-opacity + border-opacity sliders (0 = invisible disk). Draggable/resizable on canvas, snap-to-grid.
+UI AESTHETIC (from inspiration images): Charcoal brushed/rough metal panels + thick clear-plastic tactile controls + amber/copper backlit glow. Pure CSS only (layered gradients + backdrop-blur + inset/outset shadows), NO WebGL. Bulky clear-plastic buttons wanted "proper, not plain." Left = accordion rail. Center = video preview canvas. Bottom = drag-edit timeline. Native selects/file inputs hidden behind styled proxies. Accent-color variants planned.
+FEATURES PLANNED: subtitle engine (active-word glow+stroke, fonts/colors/sizes/word-count, SRT export), waveform (5 styles: bars/line/wave/blocks/mirror; positions circular/top/bottom/L/R; modes single-all / single-colorshift / two-speaker / two+music / three-track; only ACTIVE speakers animate — waveforms carry lots of the "value" since no generative video), AI background auto-fetch with relevancy↔frequency slider (min-clip-duration strobe guard), transitions, audio ducking, uploadable logo (4 corners/watermark), presets, "Dogs & Butterflies" sample project.
+CREDITS (README, already LIVE on GitHub): You.com, Claude Opus 4.8, Hermes agent, Google Flow. Site: https://BYOK-Vid-Creator.stravelakis.com
+FILES DONE (root unless noted):
+package.json, tailwind.config.js, postcss.config.js, tsconfig.json
+electron.vite.config.ts, index.html
+electron/main.ts, electron/preload.ts (both created)
+src/main.tsx, src/index.css (theme tokens)
+src/store/types.ts, defaults.ts, useProjectStore.ts (incl. fps + speakers slice), settingsTypes.ts, useSettingsStore.ts (persisted API keys — need to confirm secure storage), SpeakerConfig type
+src/components/PlasticButton.tsx
+AppShell layout wired to store (fps/aspect)
+SECURITY NOTE TO RESOLVE: Confirm API keys stored securely (electron safeStorage / OS keychain), never exposed to renderer or committed.
+NEXT = PHASE 1g: Finish App shell panels — RenderSettings dashboard (fps 10/24/30 dropdown, aspect 9:16 & 16:9) + BackendSettings panel (API key inputs, defaults, saved templates) in charcoal-metal/clear-plastic style. Then canvas preview + waveform renderer.
+IMMEDIATE TODO FOR USER (on PC, whenever ready): clone repo, npm install, npm run dev to see it launch for the first time.
+
+
+=======================
+=======================
 # BYOK-Vid-Creator — Build Handoff (Phase 1a–1d complete)
 
 ## What this app is
