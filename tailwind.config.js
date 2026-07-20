@@ -5,37 +5,36 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Charcoal metal body
         metal: {
-          900: "#0d0d0f",   // deepest charcoal
-          800: "#151518",
-          700: "#1d1d21",
-          600: "#26262b",   // panel face
-          500: "#33333a",   // raised edge
+          900: "#0d0d0f",
+          800: "#141417",
+          700: "#1c1c20",
+          600: "#26262b",
+          500: "#33333a",
         },
+        // Amber/copper glow (from your inspiration renders)
         amber: {
-          glow: "#ff9a3c",
-          core: "#ffb35c",
-          dim:  "#7a4a1f",
+          DEFAULT: "#e8a24a",
+          bright: "#ffc57a",
+          deep: "#b06d23",
         },
-        plastic: "rgba(255,255,255,0.06)", // clear-plastic overlay
+        speaker1: "#e8a24a",
+        speaker2: "#4ac2e8",
+      },
+      fontFamily: {
+        // Tech/industrial display + clean body
+        display: ["'Rajdhani'", "system-ui", "sans-serif"],
+        body: ["'Inter'", "system-ui", "sans-serif"],
       },
       boxShadow: {
-        // raised charcoal-metal panel
-        panel:
-          "inset 0 1px 0 rgba(255,255,255,0.06), inset 0 -2px 4px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.5)",
-        // pressed / recessed slot
-        recess:
-          "inset 0 2px 6px rgba(0,0,0,0.8), inset 0 -1px 0 rgba(255,255,255,0.04)",
-        // clear-plastic button
+        // Recessed metal socket
+        socket:
+          "inset 0 2px 4px rgba(0,0,0,0.8), inset 0 -1px 1px rgba(255,255,255,0.04)",
+        // Raised plastic key
         plastic:
-          "inset 0 1px 1px rgba(255,255,255,0.5), inset 0 -6px 10px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.6)",
-        // amber glow (waveform / active)
-        glow: "0 0 8px rgba(255,154,60,0.7), 0 0 20px rgba(255,154,60,0.35)",
-      },
-      backdropBlur: { plastic: "6px" },
-      fontFamily: {
-        display: ["'Rajdhani'", "system-ui", "sans-serif"], // techy display
-        mono: ["'JetBrains Mono'", "monospace"],
+          "0 2px 3px rgba(0,0,0,0.6), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.4)",
+        glow: "0 0 12px rgba(232,162,74,0.55), 0 0 2px rgba(255,197,122,0.9)",
       },
     },
   },
