@@ -6,7 +6,7 @@ export interface RenderSettings {
   format: AspectRatio;
   width: number;
   height: number;
-  durationSec: number; // max 600 (10 min)
+  durationSec: number;   // max 600 (10 min)
   engine: Engine;
 }
 
@@ -21,21 +21,21 @@ export interface WaveformConfig {
 
 export interface SpeakerConfig {
   id: string;
-  label: string;
-  sheetUrl: string;
-  bgOpacity: number;
-  borderOpacity: number;
+  label: string;         // "Male Dog" / "Female"
+  sheetUrl: string;      // viseme sprite-sheet PNG
+  bgOpacity: number;     // default 0 (invisible disk)
+  borderOpacity: number; // default 1
   bgColor: string;
   borderColor: string;
   x: number;
   y: number;
-  size: number;
+  size: number;          // diameter in px on canvas
 }
 
 export interface ProjectState {
   render: RenderSettings;
   waveform: WaveformConfig;
-  bgRelevancy: number;
+  bgRelevancy: number;   // 0 = fewer/longer, 1 = many/fast
   fps: Fps;
   speakers: SpeakerConfig[];
 }
