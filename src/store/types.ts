@@ -13,7 +13,7 @@ export interface RenderSettings {
 export interface WaveformConfig {
   position: "circular" | "top" | "bottom" | "left" | "right";
   behavior: "single" | "single-colorshift" | "dual" | "dual-plus-music" | "triple";
-  style: "bars" | "lines" | "wave" | "mirror" | "dots";
+  style: "bars" | "lines" | "wave" | "mirror" | "dots" | "rings";
   colorA: string;
   colorB: string;
   colorMusic: string;

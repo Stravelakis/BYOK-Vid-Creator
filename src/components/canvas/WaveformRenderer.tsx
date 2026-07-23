@@ -169,6 +169,41 @@ export function WaveformRenderer({ config, width, height }: Props) {
               </g>
             );
           }
+          case "rings": {
+            // Wobbling, tilted, glowing orbital rings — ignores `position`
+            // entirely (a ring doesn't have a meaningful top/bottom/left/
+            // right variant the way bars do) and draws centered ellipses
+            // instead of the per-sample point geometry the other styles use.
+            const cx = width / 2;
+            const cy = height / 2;
+            const baseR = Math.min(width, height) * (0.22 + ti * 0.05);
+            const avgAmp =
+              amps.reduce((sum, a) => sum + a, 0) / Math.max(1, amps.length);
+            const r = baseR * (0.85 + avgAmp * 0.35);
+            // Each ring gets its own wobble/spin phase so multiple rings
+            // don't move in lockstep — reads as organic, not mechanical.
+            const squash = 0.32 + 0.16 * Math.sin(timeMs / 2200 + ti * 1.9);
+            const rotationDeg = ((timeMs / 45 + ti * 55) % 360);
+            const glowWidth = Math.max(2, barWidth * 2.4);
+            const coreWidth = Math.max(1.5, barWidth * 0.75);
+            return (
+              <g
+                key={ti}
+                opacity={opacity}
+                transform={`translate(${cx} ${cy}) rotate(${rotationDeg.toFixed(1)})`}
+              >
+                <ellipse
+                  rx={r} ry={r * squash}
+                  fill="none" stroke={color} strokeWidth={glowWidth}
+                  opacity={0.35} style={{ filter: "blur(6px)" }}
+                />
+                <ellipse
+                  rx={r} ry={r * squash}
+                  fill="none" stroke={color} strokeWidth={coreWidth}
+                />
+              </g>
+            );
+          }
           case "dots": {
             return (
               <g key={ti} opacity={opacity}>

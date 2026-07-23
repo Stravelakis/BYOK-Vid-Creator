@@ -11,7 +11,7 @@ import { VISEME } from "./lib/visemes/visemeMap";
 import type { Fps, WaveformConfig } from "./store/types";
 
 const FPS_OPTIONS: Fps[] = [10, 24, 30];
-const WAVEFORM_STYLES: WaveformConfig["style"][] = ["bars", "lines", "wave", "mirror", "dots"];
+const WAVEFORM_STYLES: WaveformConfig["style"][] = ["bars", "lines", "wave", "mirror", "dots", "rings"];
 const WAVEFORM_POSITIONS: WaveformConfig["position"][] = ["circular", "top", "bottom", "left", "right"];
 const WAVEFORM_BEHAVIORS: { id: WaveformConfig["behavior"]; label: string }[] = [
   { id: "single", label: "Single" },
