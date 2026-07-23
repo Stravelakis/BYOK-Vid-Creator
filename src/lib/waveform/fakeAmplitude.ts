@@ -9,11 +9,14 @@
 
 export function fakeAmplitude(track: number, i: number, timeMs: number): number {
   const t = timeMs / 1000;
-  const phase = i * 0.7 + track * 2.1;
+  // Small per-index step (was 0.7 rad — a huge jump between neighboring
+  // bars, which is what made the waveform look jagged/angular instead of
+  // like a flowing wave). 0.12 keeps adjacent samples strongly correlated.
+  const spatial = i * 0.12 + track * 2.1;
   const a =
-    Math.sin(t * 2.4 + phase) * 0.5 +
-    Math.sin(t * 5.1 + phase * 1.3) * 0.3 +
-    Math.sin(t * 0.9 + phase * 0.4) * 0.2;
+    Math.sin(t * 2.4 + spatial) * 0.5 +
+    Math.sin(t * 1.1 + spatial * 0.6) * 0.3 +
+    Math.sin(t * 0.5 + spatial * 0.25) * 0.2;
   return Math.max(0.05, Math.min(1, (a + 1) / 2));
 }
 

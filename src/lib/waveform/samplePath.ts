@@ -13,19 +13,25 @@ export interface PathPoint {
  * position, plus the outward-facing unit normal at each point (the
  * direction bars/dots/lines extend toward as amplitude increases).
  * Coordinates are in the 0..w / 0..h box the waveform renders into.
+ *
+ * `edgeFlush` toggles between hugging the literal edge (0% margin) and the
+ * default inset (8% margin) — this is deliberately a toggle, not free-drag
+ * positioning, since that's all that was actually needed.
  */
 export function samplePath(
   position: WaveformConfig["position"],
   w: number,
   h: number,
-  count: number
+  count: number,
+  edgeFlush = false
 ): PathPoint[] {
   const pts: PathPoint[] = [];
+  const margin = edgeFlush ? 0.01 : 0.08;
 
   if (position === "circular") {
     const cx = w / 2;
     const cy = h / 2;
-    const r = Math.min(w, h) * 0.34;
+    const r = Math.min(w, h) * (edgeFlush ? 0.48 : 0.34);
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2 - Math.PI / 2;
       pts.push({
@@ -39,20 +45,20 @@ export function samplePath(
   }
 
   if (position === "top" || position === "bottom") {
-    const y = position === "top" ? h * 0.08 : h * 0.92;
+    const y = position === "top" ? h * margin : h * (1 - margin);
     const ny = position === "top" ? 1 : -1; // bars grow inward, toward center
     for (let i = 0; i < count; i++) {
-      const x = w * (0.08 + (i / (count - 1)) * 0.84);
+      const x = w * (margin + (i / (count - 1)) * (1 - margin * 2));
       pts.push({ x, y, nx: 0, ny });
     }
     return pts;
   }
 
   // left / right
-  const x = position === "left" ? w * 0.08 : w * 0.92;
+  const x = position === "left" ? w * margin : w * (1 - margin);
   const nx = position === "left" ? 1 : -1;
   for (let i = 0; i < count; i++) {
-    const y = h * (0.08 + (i / (count - 1)) * 0.84);
+    const y = h * (margin + (i / (count - 1)) * (1 - margin * 2));
     pts.push({ x, y, nx, ny: 0 });
   }
   return pts;

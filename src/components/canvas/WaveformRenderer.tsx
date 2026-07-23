@@ -13,46 +13,51 @@ interface TrackDef {
   color: string;
   /** Always-animating tracks (e.g. music) ignore the active-speaker gate. */
   alwaysActive: boolean;
-  /** Ring offset (circular) / lane offset (linear) so multiple tracks don't overlap. */
-  laneOffset: number;
+  /** Lane index — how far this track is offset from the others so multiple
+   *  tracks don't visually merge into one another. */
+  lane: number;
 }
-
-const SAMPLE_COUNT = 48;
 
 function tracksForBehavior(cfg: WaveformConfig): TrackDef[] {
   switch (cfg.behavior) {
     case "single":
-      return [{ color: cfg.colorA, alwaysActive: true, laneOffset: 0 }];
+      return [{ color: cfg.colorA, alwaysActive: true, lane: 0 }];
     case "single-colorshift":
       // One visual track, but its color swaps between speaker A/B colors
       // depending on which speaker is "active" — handled in the component,
       // not here (needs the live active-track index).
-      return [{ color: cfg.colorA, alwaysActive: true, laneOffset: 0 }];
+      return [{ color: cfg.colorA, alwaysActive: true, lane: 0 }];
     case "dual":
       return [
-        { color: cfg.colorA, alwaysActive: false, laneOffset: -1 },
-        { color: cfg.colorB, alwaysActive: false, laneOffset: 1 },
+        { color: cfg.colorA, alwaysActive: false, lane: -1 },
+        { color: cfg.colorB, alwaysActive: false, lane: 1 },
       ];
     case "dual-plus-music":
       return [
-        { color: cfg.colorA, alwaysActive: false, laneOffset: -1.4 },
-        { color: cfg.colorB, alwaysActive: false, laneOffset: 0 },
-        { color: cfg.colorMusic, alwaysActive: true, laneOffset: 1.4 },
+        { color: cfg.colorA, alwaysActive: false, lane: -1.5 },
+        { color: cfg.colorB, alwaysActive: false, lane: 0 },
+        { color: cfg.colorMusic, alwaysActive: true, lane: 1.5 },
       ];
     case "triple":
       return [
-        { color: cfg.colorA, alwaysActive: true, laneOffset: -1.4 },
-        { color: cfg.colorB, alwaysActive: true, laneOffset: 0 },
-        { color: cfg.colorMusic, alwaysActive: true, laneOffset: 1.4 },
+        { color: cfg.colorA, alwaysActive: true, lane: -1.5 },
+        { color: cfg.colorB, alwaysActive: true, lane: 0 },
+        { color: cfg.colorMusic, alwaysActive: true, lane: 1.5 },
       ];
   }
 }
 
-function offsetPoints(base: PathPoint[], position: WaveformConfig["position"], lane: number): PathPoint[] {
+function offsetPoints(
+  base: PathPoint[],
+  position: WaveformConfig["position"],
+  lane: number,
+  frameMin: number
+): PathPoint[] {
   if (lane === 0) return base;
-  // For circular, lane shifts the ring radius (via the normal direction).
-  // For linear positions, lane shifts along the lane's own axis.
-  const laneGap = position === "circular" ? 14 : 10;
+  // Proportional to frame size (not a fixed px nudge) and generous enough
+  // that multiple simultaneous tracks read as distinct lanes/rings instead
+  // of merging into visual noise.
+  const laneGap = frameMin * (position === "circular" ? 0.09 : 0.06);
   return base.map((p) => ({
     ...p,
     x: p.x + p.nx * lane * laneGap,
@@ -83,6 +88,24 @@ function toPathD(points: { x: number; y: number }[], closed: boolean, smooth: bo
   return d;
 }
 
+/** One tilted glowing ellipse — the building block of the rings style.
+ *  Multiple of these per track, at different tilt/size/speed, is what
+ *  gives the "chaotic overlapping orbits" look instead of one clean ring. */
+function RingEllipse({
+  r, squash, rotationDeg, color, glowWidth, coreWidth, opacity,
+}: {
+  r: number; squash: number; rotationDeg: number; color: string;
+  glowWidth: number; coreWidth: number; opacity: number;
+}) {
+  return (
+    <g opacity={opacity} transform={`rotate(${rotationDeg.toFixed(1)})`}>
+      <ellipse rx={r} ry={r * squash} fill="none" stroke={color} strokeWidth={glowWidth}
+        opacity={0.3} style={{ filter: "blur(6px)" }} />
+      <ellipse rx={r} ry={r * squash} fill="none" stroke={color} strokeWidth={coreWidth} />
+    </g>
+  );
+}
+
 export function WaveformRenderer({ config, width, height }: Props) {
   const [timeMs, setTimeMs] = useState(0);
   const rafRef = useRef<number>();
@@ -101,10 +124,12 @@ export function WaveformRenderer({ config, width, height }: Props) {
 
   if (width <= 0 || height <= 0) return null;
 
-  const base = samplePath(config.position, width, height, SAMPLE_COUNT);
+  const density = Math.round(config.density) || 48;
+  const frameMin = Math.min(width, height);
+  const base = samplePath(config.position, width, height, density, config.edgeFlush);
   const tracks = tracksForBehavior(config);
   const closed = config.position === "circular";
-  const maxLen = Math.min(width, height) * 0.14;
+  const maxLen = frameMin * 0.14 * config.scale;
   const activeIdx = fakeActiveTrack(tracks.length, timeMs);
 
   return (
@@ -123,13 +148,56 @@ export function WaveformRenderer({ config, width, height }: Props) {
           : track.color;
         const active = track.alwaysActive || ti === activeIdx;
         const opacity = active ? 1 : 0.22;
-        const points = offsetPoints(base, config.position, track.laneOffset);
 
+        if (config.style === "rings") {
+          // Chaotic overlapping-orbit cluster: 2 ellipses per track at
+          // different tilt/squash/speed so they read as layered planetary
+          // rings rather than one clean circle. ringInnerRadius reserves
+          // open space in the middle for a speaker avatar to sit in.
+          const cx = width * config.ringX;
+          const cy = height * config.ringY;
+          const innerR = frameMin * 0.5 * config.ringInnerRadius;
+          const clusterR = frameMin * 0.42 * config.ringSize;
+          const avgAmp =
+            [...Array(6)].reduce(
+              (sum, _, i) => sum + fakeAmplitude(ti, i * 7, timeMs),
+              0
+            ) / 6;
+
+          const ringsForTrack = [0, 1].map((ri) => {
+            const seed = ti * 2 + ri;
+            const r =
+              innerR +
+              (clusterR - innerR) * (0.55 + 0.45 * ((seed * 37) % 100) / 100) *
+                (0.85 + avgAmp * 0.3);
+            const squash = 0.28 + 0.22 * Math.sin(timeMs / (1800 + seed * 240) + seed * 2.3);
+            const speed = 30 + (seed % 3) * 14; // different orbital speeds
+            const direction = seed % 2 === 0 ? 1 : -1;
+            const rotationDeg = ((timeMs / speed) * direction + seed * 73) % 360;
+            const glowWidth = Math.max(2, frameMin * 0.01);
+            const coreWidth = Math.max(1.5, frameMin * 0.0035);
+            return (
+              <RingEllipse
+                key={ri}
+                r={r} squash={squash} rotationDeg={rotationDeg}
+                color={color} glowWidth={glowWidth} coreWidth={coreWidth}
+                opacity={opacity * (ri === 0 ? 1 : 0.75)}
+              />
+            );
+          });
+
+          return (
+            <g key={ti} transform={`translate(${cx} ${cy})`}>
+              {ringsForTrack}
+            </g>
+          );
+        }
+
+        const points = offsetPoints(base, config.position, track.lane, frameMin);
         const amps = points.map((_, i) =>
           active ? fakeAmplitude(ti, i, timeMs) : 0.06
         );
-
-        const barWidth = Math.max(1.5, (Math.min(width, height) * 0.9) / SAMPLE_COUNT / 2);
+        const barWidth = Math.max(1.5, (frameMin * 0.9) / density / 2);
 
         switch (config.style) {
           case "bars": {
@@ -169,41 +237,6 @@ export function WaveformRenderer({ config, width, height }: Props) {
               </g>
             );
           }
-          case "rings": {
-            // Wobbling, tilted, glowing orbital rings — ignores `position`
-            // entirely (a ring doesn't have a meaningful top/bottom/left/
-            // right variant the way bars do) and draws centered ellipses
-            // instead of the per-sample point geometry the other styles use.
-            const cx = width / 2;
-            const cy = height / 2;
-            const baseR = Math.min(width, height) * (0.22 + ti * 0.05);
-            const avgAmp =
-              amps.reduce((sum, a) => sum + a, 0) / Math.max(1, amps.length);
-            const r = baseR * (0.85 + avgAmp * 0.35);
-            // Each ring gets its own wobble/spin phase so multiple rings
-            // don't move in lockstep — reads as organic, not mechanical.
-            const squash = 0.32 + 0.16 * Math.sin(timeMs / 2200 + ti * 1.9);
-            const rotationDeg = ((timeMs / 45 + ti * 55) % 360);
-            const glowWidth = Math.max(2, barWidth * 2.4);
-            const coreWidth = Math.max(1.5, barWidth * 0.75);
-            return (
-              <g
-                key={ti}
-                opacity={opacity}
-                transform={`translate(${cx} ${cy}) rotate(${rotationDeg.toFixed(1)})`}
-              >
-                <ellipse
-                  rx={r} ry={r * squash}
-                  fill="none" stroke={color} strokeWidth={glowWidth}
-                  opacity={0.35} style={{ filter: "blur(6px)" }}
-                />
-                <ellipse
-                  rx={r} ry={r * squash}
-                  fill="none" stroke={color} strokeWidth={coreWidth}
-                />
-              </g>
-            );
-          }
           case "dots": {
             return (
               <g key={ti} opacity={opacity}>
@@ -213,7 +246,7 @@ export function WaveformRenderer({ config, width, height }: Props) {
                     <circle
                       key={i}
                       cx={tip.x} cy={tip.y}
-                      r={Math.max(1.5, barWidth * 0.9 * (0.4 + amps[i]))}
+                      r={Math.max(1.5, barWidth * 0.9 * config.dotSize * (0.4 + amps[i]))}
                       fill={color}
                     />
                   );

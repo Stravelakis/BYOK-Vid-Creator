@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { PlasticButton } from "./components/ui/PlasticButton";
+import { Toggle } from "./components/ui/Toggle";
+import { Slider } from "./components/ui/Slider";
 import { SpeakerAvatar } from "./components/canvas/SpeakerAvatar";
 import { WaveformRenderer } from "./components/canvas/WaveformRenderer";
 import BackendPanel from "./components/settings/BackendPanel";
@@ -138,6 +140,74 @@ export default function App() {
           </section>
 
           <section>
+            <div className="label-etched mb-2">Waveform Shape</div>
+            <div className="space-y-3">
+              <Slider
+                label="Size"
+                value={waveform.scale}
+                min={0.5} max={1.8} step={0.05}
+                onChange={(v) => setWaveform({ scale: v })}
+                format={(v) => `${v.toFixed(2)}x`}
+              />
+              <Slider
+                label="Density"
+                value={waveform.density}
+                min={16} max={96} step={4}
+                onChange={(v) => setWaveform({ density: v })}
+                format={(v) => `${Math.round(v)}`}
+              />
+              {waveform.position !== "circular" && waveform.style !== "rings" && (
+                <Toggle
+                  label="Flush to edge"
+                  checked={waveform.edgeFlush}
+                  onChange={(v) => setWaveform({ edgeFlush: v })}
+                />
+              )}
+              {waveform.style === "dots" && (
+                <Slider
+                  label="Dot Size"
+                  value={waveform.dotSize}
+                  min={0.4} max={2.5} step={0.1}
+                  onChange={(v) => setWaveform({ dotSize: v })}
+                  format={(v) => `${v.toFixed(1)}x`}
+                />
+              )}
+              {waveform.style === "rings" && (
+                <>
+                  <Slider
+                    label="Ring Size"
+                    value={waveform.ringSize}
+                    min={0.5} max={1.5} step={0.05}
+                    onChange={(v) => setWaveform({ ringSize: v })}
+                    format={(v) => `${v.toFixed(2)}x`}
+                  />
+                  <Slider
+                    label="Center Opening"
+                    value={waveform.ringInnerRadius}
+                    min={0} max={0.8} step={0.02}
+                    onChange={(v) => setWaveform({ ringInnerRadius: v })}
+                    format={(v) => `${Math.round(v * 100)}%`}
+                  />
+                  <Slider
+                    label="Position X"
+                    value={waveform.ringX}
+                    min={0} max={1} step={0.02}
+                    onChange={(v) => setWaveform({ ringX: v })}
+                    format={(v) => `${Math.round(v * 100)}%`}
+                  />
+                  <Slider
+                    label="Position Y"
+                    value={waveform.ringY}
+                    min={0} max={1} step={0.02}
+                    onChange={(v) => setWaveform({ ringY: v })}
+                    format={(v) => `${Math.round(v * 100)}%`}
+                  />
+                </>
+              )}
+            </div>
+          </section>
+
+          <section>
             <div className="label-etched mb-2">Waveform Mode</div>
             <div className="flex flex-wrap gap-2">
               {WAVEFORM_BEHAVIORS.map((b) => (
@@ -221,7 +291,11 @@ export default function App() {
         </aside>
 
         {/* CENTER: preview canvas or backend settings */}
-        <main className="panel-metal flex-1 grid place-items-center p-6 min-h-0">
+        <main
+          className={`panel-metal flex-1 p-6 min-h-0 ${
+            view === "settings" ? "overflow-hidden" : "grid place-items-center"
+          }`}
+        >
           {view === "settings" ? (
             <div className="w-full h-full">
               <BackendPanel />

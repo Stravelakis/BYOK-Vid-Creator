@@ -17,6 +17,14 @@ export interface WaveformConfig {
   colorA: string;
   colorB: string;
   colorMusic: string;
+  scale: number;       // 0.5–1.8, overall amplitude-extension multiplier
+  density: number;      // sample/bar count, 16–96
+  dotSize: number;      // dots-style-only radius multiplier, 0.4–2.5
+  edgeFlush: boolean;   // true = hug the true edge, false = inset margin
+  ringInnerRadius: number; // 0–0.8, how much open space in the middle (for an avatar)
+  ringSize: number;     // 0.5–1.5, overall ring cluster scale
+  ringX: number;        // 0–1, ring cluster center (fraction of frame)
+  ringY: number;        // 0–1
 }
 
 export interface SpeakerConfig {
